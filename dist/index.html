@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 
+      Añadimos login de google al index
+    -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!--
+      Definimos usuario y función al hacer el login
+    -->
+    <div id="g_id_onload"
+         data-client_id="916535315888-q1or1qldbfcjdhdsdbv3drnhus8kbh55.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+
+    <!--
+      Importamos el jwt-decode para decodificar el token
+    -->
+    
+
+
+    <title>
+      Examen Enero
+    </title>
+    <script type="module" crossorigin src="/assets/index.cb47ec78.js"></script>
+    <link rel="stylesheet" href="/assets/index.32267b5e.css">
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!--
+      Importamos el jwt de nuevo
+    -->
+    
+
+    <!--
+      Función para recoger datos y guardarlos en la memoria
+    -->
+    <script>
+      function handleCredentialResponse(response) {
+       
+        //Decodificamos el response
+        const responsePayload = jwt_decode(response.credential);
+        
+        /*Console logs
+        console.log("ID: " + responsePayload.sub);
+        console.log('Full Name: ' + responsePayload.name);
+        console.log('Given Name: ' + responsePayload.given_name);
+        console.log('Family Name: ' + responsePayload.family_name);
+        console.log("Image URL: " + responsePayload.picture);
+        console.log("Email: " + responsePayload.email);
+        console.log("Email: " + responsePayload.iat);
+        console.log("Email: " + responsePayload.exp);
+        */
+       
+        //Guardamos email y token en la memoria
+        localStorage.setItem('Token', response.credential); 
+        localStorage.setItem('NombreUsuario', responsePayload.email);
+
+        localStorage.setItem('Email', responsePayload.email);
+        localStorage.setItem('Time', responsePayload.iat);
+        localStorage.setItem('Exp', responsePayload.exp);
+        localStorage.setItem('Id', responsePayload.sub);
+        
+        //Recargamos la pagina por si hay algo que no sea visible
+        location.reload();
+
+        //Feedback
+        alert("Bienvenido " + responsePayload.name)
+
+      }
+    </script>
+
+    
+    
+  </body>
+</html>

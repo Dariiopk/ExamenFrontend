@@ -1,0 +1,91 @@
+<script>
+import axios from 'axios';
+
+export default {
+  name: "get-request",
+  data() {
+    return {
+      //Viviendas en null, luego se inicializa
+      viviendas: null
+    };
+  },
+
+  //Cuando se crea la pagina
+  created() {
+    // Si llega por parametros un filtro
+    if(this.$route.params.localidad){
+      var parametro = this.$route.params.localidad;
+      parametro = parametro.substring(1,parametro.length);
+      //Axios con parametro, se inicializa viviendas
+      axios.get("https://2kl0wm.deta.dev/appVivienda/viviendas/"+parametro).then(response => this.viviendas = response.data);
+    }else{
+      //Axios sin parametro, se inicializa viviendas
+      axios.get("https://2kl0wm.deta.dev/appVivienda/viviendas").then(response => this.viviendas = response.data);
+    }
+  },
+
+  //Al reload
+  beforeUpdate() { 
+        // Axios
+    if(this.$route.params.localidad){
+      var parametro = this.$route.params.localidad;
+      parametro = parametro.substring(1,parametro.length);
+      axios.get("https://2kl0wm.deta.dev/appVivienda/viviendas/"+parametro).then(response => this.viviendas = response.data);
+    }else{
+      axios.get("https://2kl0wm.deta.dev/appVivienda/viviendas").then(response => this.viviendas = response.data);
+    }
+  }
+};
+
+</script>
+
+
+<template>
+      <!--
+        Si no hay viviendas no se muestra nada
+      -->
+      <h2 v-if="this.viviendas.length == 0">
+        No existen viviendas en esta provincia
+      </h2>
+
+      <table v-else class="tabla-Todo">
+        <tr class="fila-encabezado">
+
+          <!--
+            Tipos de la tabla
+          -->
+            <td class="celda-img" ></td>
+            <td class="celda-text" >Dirección</td>
+            <td class="celda-text" >Localidad</td>
+            <td class="celda-text" >Provincia</td>
+            <td class="celda-text" >Capacidad</td>
+            <td class="celda-button" ></td>
+        </tr>
+
+        <!--
+          v-for: para mostrar todas los items por key
+          item.loquesea
+          botón con param _id
+        -->
+        <tr class="fila" v-for="vivienda in viviendas" :key="vivienda._id">
+
+          <td class="celda-img" ><img :src= 'vivienda.foto'  width="100" height="100"></td>
+
+          <td class="celda-text" > {{vivienda.direccion}} </td>
+
+          <td class="celda-text" >{{vivienda.localidad}}</td>
+
+          <td class="celda-text" >{{vivienda.provincia}}</td>
+
+          <td class="celda-text" >{{vivienda.capacidad}}</td>
+
+          <td class="celda-button" ><router-link :to="{ name: 'VerAnuncio', params: { id: vivienda._id  }}" ><a class="boton_personalizado" href="">Ver anuncio</a></router-link></td>
+
+        </tr>
+      </table>
+
+</template>
+
+<style>
+@import '../assets/listasStyle.css';
+</style>
