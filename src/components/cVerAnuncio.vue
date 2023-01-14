@@ -44,8 +44,8 @@ export default {
 
     //recogemos parametros en axios
     var parametro = this.$route.params.id;
-    axios.get("https://2kl0wm.deta.dev/appVivienda/vivienda", { params: { id: parametro } }).then(response => this.vivienda = response.data);
-    axios.get("https://2kl0wm.deta.dev/appReservas/reservas/viviendasAsociada/" + parametro).then(res => this.reservas = res.data);
+    axios.get("https://examenwebbackend.deta.dev/appVivienda/vivienda", { params: { id: parametro } }).then(response => this.vivienda = response.data);
+    axios.get("https://examenwebbackend.deta.dev/appReservas/reservas/viviendasAsociada/" + parametro).then(res => this.reservas = res.data);
   },
   methods: {
     //Comenarios
@@ -60,7 +60,7 @@ export default {
 
       axios({
         method: 'put',
-        url: 'http://localhost:8001/viviendas/' + this.vivienda._id,
+        url: 'http://examenwebbackend.deta.dev/viviendas/' + this.vivienda._id,
         headers: { 'Content-Type': 'application/json' },
         data: JSON.stringify(this.vivienda)
       })
@@ -169,8 +169,8 @@ export default {
           onApprove: async (data, actions) => {
             const order = await actions.order.capture();
             this.paidFor = true;
-            axios.post("https://2kl0wm.deta.dev/appReservas/reservas", this.reservaObjeto).then((result) => { console.log(result.data); });
-            axios.get("https://2kl0wm.deta.dev/appReservas/reservas/viviendasAsociada/" + this.vivienda._id).then(res => this.reservas = res.data);
+            axios.post("https://examenwebbackend.deta.dev/appReservas/reservas", this.reservaObjeto).then((result) => { console.log(result.data); });
+            axios.get("https://examenwebbackend.deta.dev/appReservas/reservas/viviendasAsociada/" + this.vivienda._id).then(res => this.reservas = res.data);
             console.log(order);
           },
           onError: err => {

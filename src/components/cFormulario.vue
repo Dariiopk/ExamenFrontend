@@ -39,7 +39,7 @@ export default {
 
             //Axios enviando el objeto
             console.log(objeto);
-            axios.post("https://2kl0wm.deta.dev/appVivienda/viviendas", objeto).then((result) => {
+            axios.post("https://examenwebbackend.deta.dev/appVivienda/viviendas", objeto).then((result) => {
             this.id = result.data;
             console.log(this.id);
             });
