@@ -15,18 +15,8 @@ export default {
   data() {
     return {
       vivienda: null,
-      fechaInicio: null,
-      fechaFin: null,
-      huespedes: null,
       reservas: null,
-      disponibles: true,
-      pagoPendiente: false,
-      loaded: false,
-      paidFor: false,
-      price: null,
-      reservaObjeto: {},
       token: null,
-      comentario: "",
       nombreUsuario: ""
     };
   },
@@ -48,136 +38,12 @@ export default {
     axios.get("https://examenwebbackend.deta.dev/appReservas/reservas/viviendasAsociada/" + parametro).then(res => this.reservas = res.data);
   },
   methods: {
-    //Comenarios
-    comentar() {
-
-      var comentarioVivienda = {
-        "texto": this.comentario,
-        "usuario": this.nombreUsuario
-      }
-
-      this.vivienda.comentarios.unshift(comentarioVivienda);
-
-      axios({
-        method: 'put',
-        url: 'http://examenwebbackend.deta.dev/viviendas/' + this.vivienda._id,
-        headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify(this.vivienda)
-      })
-
-      this.comentario = "";
-      alert("Se ha realizado el comentario correctamente");
-    },
-
     //Map center de vivienda
     mapCenter() {
       return {
         lat: parseFloat(this.vivienda.latitud),
         lng: parseFloat(this.vivienda.longitud),
       }
-    },
-
-    //Comprueba los dias
-    comprobarDias(dia) {
-      var size = Object.keys(this.reservas).length;
-      var cont = 0;
-      var disponible = true;
-      while (cont < size && disponible) {
-        //Comparar el dia concreto de abajo con todo el intervalo de las reservas
-        disponible = dia < Date.parse(this.reservas[cont].fechaInicio) || dia > Date.parse(this.reservas[cont].fechaFin);
-        cont++;
-      }
-      return disponible;
-    },
-
-    //Disponibilidad
-    disponibilidad() {
-      var cont = this.calcularIntervalo() + 1;
-      var disponible = Date.parse(this.fechaFin) > Date.parse(this.fechaInicio);
-      var dia = Date.parse(this.fechaInicio);
-
-      while (cont > 0 && disponible) {
-        //Dia a dia del intervalo
-        disponible = this.comprobarDias(dia);
-        cont--;
-        dia = dia + (1000 * 60 * 60 * 24); //sumamos un dia 
-      }
-      return disponible;
-    },
-    calcularIntervalo() {
-      let resta = Date.parse(this.fechaFin) - Date.parse(this.fechaInicio);
-      return Math.round(resta / (1000 * 60 * 60 * 24));
-    },
-    funcionPago() {
-      const script = document.createElement("script");
-      script.src =
-        "https://www.paypal.com/sdk/js?client-id=ASfKR507JdZYCMd1Af0amkoNTv7YWS3vP1WrdUtAjd5is4sfPJ6P9_TjG5Ib5DqROqD7qlgzWm2vTIAC";
-      script.addEventListener("load", this.setLoaded);
-      document.body.appendChild(script);
-    },
-    realizarPago() {
-      this.funcionPago();
-      this.price = this.reservaObjeto.costeTotal;
-      this.pagoPendiente = true;
-    },
-
-    //Al enviar el formulario
-    async sendForm() {
-
-      var objeto = {};
-
-      objeto = {
-        "id": this.vivienda._id,
-        "direccion": this.vivienda.direccion,
-        "localidad": this.vivienda.localidad,
-        "provincia": this.vivienda.provincia,
-        "foto": this.vivienda.foto
-      };
-
-      this.reservaObjeto = {
-        "vivienda": objeto,
-        "fechaInicio": this.fechaInicio,
-        "fechaFin": this.fechaFin,
-        "costeTotal": this.vivienda.precio * this.calcularIntervalo(),
-        "usernameBuyer": this.nombreUsuario
-      }
-
-      if (!this.disponibilidad()) {
-        alert('No se puede reservar. Las fechas no son válidas.');
-      } else if (this.huespedes > this.vivienda.capacidad) {
-        alert('No se puede reservar. Demasiados huéspedes.');
-      } else {
-        this.realizarPago();
-      }
-    },
-    setLoaded: function () { //paypal
-      this.loaded = true;
-      window.paypal
-        .Buttons({
-          createOrder: (data, actions) => {
-            return actions.order.create({
-              purchase_units: [
-                {
-                  amount: {
-                    currency_code: "USD",
-                    value: this.price
-                  }
-                }
-              ]
-            });
-          },
-          onApprove: async (data, actions) => {
-            const order = await actions.order.capture();
-            this.paidFor = true;
-            axios.post("https://examenwebbackend.deta.dev/appReservas/reservas", this.reservaObjeto).then((result) => { console.log(result.data); });
-            axios.get("https://examenwebbackend.deta.dev/appReservas/reservas/viviendasAsociada/" + this.vivienda._id).then(res => this.reservas = res.data);
-            console.log(order);
-          },
-          onError: err => {
-            console.log(err);
-          }
-        })
-        .render(this.$refs.paypal);
     }
   }
 }
@@ -186,23 +52,10 @@ export default {
 
 <template>
 
-  <div v-if=this.pagoPendiente>
-    <div v-if="!paidFor">
-      <h1>El coste total de la reserva es - {{ price }}€ </h1>
-      <div ref="paypal"></div>
-    </div>
-
-    <div v-if="paidFor">
-      <h1>Reserva realizada</h1>
-      <router-link to="/"> Inicio </router-link>
-      <router-link v-if="token" to="/listaReservas"> Ver Reservas </router-link>
-    </div>
-  </div>
-
   <!--
     Datos de la vivienda
   -->
-  <div v-else>
+  <div>
     <table class="tabla-Grande" v-if="vivienda">
       <tr>
 
@@ -249,39 +102,6 @@ export default {
           </table>
 
         </td>
-
-        <!--
-          Formulario de la reserva
-        -->
-        <td class="celda-Anuncio">
-          <div class="panel-Reserva">
-
-            <form @submit.prevent="sendForm">
-
-              <div class="div-padding">
-                <label for="diaEntrada" class="text-reserva">Día entrada</label><br />
-                <input type="date" v-model="fechaInicio" required />
-              </div>
-
-              <div class="div-padding">
-                <label for="diaSalida" class="text-reserva">Día salida:</label><br />
-                <input type="date" v-model="fechaFin" required />
-              </div>
-
-              <div class="div-padding">
-                <label for="huespedes" class="text-reserva">Huéspedes:</label><br />
-                <input type="number" v-model="huespedes" min="1" required class="huespedes-box" />
-              </div>
-
-              <div class="div-padding">
-                <label v-if="token == null">Necesitas iniciar sesion</label>
-                <input v-if="token != null" type="submit" class="botonPersonalizado" value="Reservar" />
-              </div>
-            </form>
-
-          </div>
-        </td>
-
       </tr>
     </table>
 
@@ -299,6 +119,8 @@ export default {
     <!--
       Muestra comentarios
     -->
+
+<!--
     <table class="tabla-Grande">
       <tr>
         <td>
@@ -335,12 +157,11 @@ export default {
           </table>
         </td>
       </tr>
-
     </table>
+-->
   </div>
 </template>
 
 <style scoped>
 @import '../assets/mostrarInformacionStyle.css';
 </style>
-
