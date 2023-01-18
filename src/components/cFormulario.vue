@@ -21,16 +21,23 @@ export default {
     },
     created() {
     // Si llega por parametros un filtro
-    axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + 36.7201600 + "/" + -4.4203400).then(response => this.aparcamientos = response.data);
+    if(sessionStorage.getItem('placeInput') != null){
+        axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + 36.7201600 + "/" + -4.4203400).then(response => this.aparcamientos = response.data);
+    }
 },
+methods: {
+    actualizarMapa(){
+        axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + this.latitud + "/" + this.longitud).then(response => this.aparcamientos = response.data).then(console.log(this.aparcamientos));
+    }
+    },
 
     //PARA EL MAPA
     setup() {
         //Recojo localizacion actual
-        const {coords} = useGeolocation()
+        //const {coords} = useGeolocation()
         const currPos = computed(() => ({
-            lat: coords.value.latitude,
-            lng: coords.value.longitude
+            lat: 36.7201600,
+            lng: -4.4203400
         }))
         
         //Carga de la key
@@ -107,9 +114,7 @@ export default {
 
                 resul_lat.value = center.lat();
                 resul_lng.value = center.lng();
-                this.aparcamientos = null;
-                axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + resul_lat.value + "/" + resul_lng.value).then(response => this.aparcamientos = response.data)
-            });
+                });
         })
         return {
             //mapa
@@ -128,6 +133,7 @@ export default {
             <!-- Autocomplete location search input -->
             <label for="direccion">Direccion</label><br>
             <input class="w-full" id="place-input" type="text" required />
+            <button v-on:click="actualizarMapa();">Buscar</button>
             <br>
 
         <div class="m-6" ref="mapDiv" style="width: 40%; height: 400px; margin-left: 470px; margin-top: 5%;">

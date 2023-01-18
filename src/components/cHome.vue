@@ -40,6 +40,12 @@ export default{
 
     <div v-if="token">
 
+    <div class="bot">
+      <RouterLink to="/formulario">
+        <a class="boton_personalizado" href="">Formulario</a>
+      </RouterLink>
+    </div>
+
     <div class="mapa">
       <GoogleMap api-key="AIzaSyAVotfCRyxA9y3yBiOafDlwoessHlHleJk"
         style="width: 400px; height: 400px; align: center; padding-left: 36%; padding-right: 25%; padding-top: 5%;"
