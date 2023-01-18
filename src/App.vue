@@ -1,5 +1,6 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
+import axios from 'axios';
 
 export default{
   //Guardamos el token si existe
@@ -7,6 +8,40 @@ export default{
     return {
       token : localStorage.getItem('Token')
     };
+  },
+  created() {
+         // Axios
+         if(this.token != null){
+      var objeto = {};
+            objeto = { 
+                "nombre"    : localStorage.getItem("Nombre"),
+                "email"  : localStorage.getItem("Email"),
+                "timestamp" : localStorage.getItem("Time"),
+                "expedicion" :  localStorage.getItem("Exp"),
+                "token" : this.token
+            };
+        console.log(objeto);
+        axios.post("https://examenwebbackend.deta.dev/appLog/entity", objeto);
+    }
+  },
+
+  //Al reload
+  beforeUpdate() { 
+        // Axios
+    if(this.token != null){
+      var objeto = {};
+            objeto = { 
+            "nombre": localStorage.getItem("Nombre").toString(),
+            "email": localStorage.getItem("Email").toString(),
+            "timestamp": localStorage.getItem("Time").toString(),
+            "expedicion": localStorage.getItem("Exp").toString(),
+            "token": localStorage.getItem("Token").toString()
+            };
+            console.log(objeto);
+        axios.post("https://examenwebbackend.deta.dev/appLog/entity", objeto).then((result) => {
+            console.log(this.id);
+            });
+    }
   },
   methods: {
 
@@ -54,15 +89,20 @@ export default{
       </h2>
     </div>
 
+<div></div>
+
     <nav>
       <router-link to="/"> Inicio </router-link>
-      <router-link to="/verLista" > Ver </router-link>
       <router-link to="/formulario" v-if="token"> Formulario </router-link>
+      <router-link to="/verLista" v-if="token"> LOGS </router-link>
+      
     </nav>
 
     <!--
       Boton inicio de sesión
     -->
+    
+
     <div class="logo" v-if="!token">
       <a class="g_id_signin" data-type="standard" data-shape="pill" data-size="large" ></a>
     </div>
@@ -71,13 +111,13 @@ export default{
       Si se ha iniciado sesion, boton con info y cerrar sesion
     -->
     <div class="logo" v-if="token" >
-        <button class="email" v-if="token" v-on:click="mostrarUsuario();" > Usuario </button>
+      <a class="boton_personalizado" v-on:click="mostrarUsuario();">Perfil</a>
     </div>
 
     <div class="logo" v-if="token" >
-        <button class="cerrar" v-if="token" v-on:click="cerrarSesion();" > Cerrar Sesion</button>
+        <router-link to="/"  v-if="token" v-on:click="cerrarSesion();" ><a class="boton_personalizado" href="">Cerrar sesion</a></router-link>
     </div>
-
+    <div></div>
   </header>
   <div padding-top="20px">
     <router-view/>

@@ -10,88 +10,19 @@ import {Loader} from '@googlemaps/js-api-loader'
 const GOOGLE_MAPS_API_KEY = 'AIzaSyAVotfCRyxA9y3yBiOafDlwoessHlHleJk'
 
 export default {
-    name: 'GPS4',
-    methods: {
-
-        //Al enviar el formulario
-        sendForm(dir, lat, lng){
-
-            //Mandamos el nombre del email sin correo
-            let nombreCorreo = this.token.email;
-            let indice = nombreCorreo.indexOf("@");
-            let nombreSinCorreo = nombreCorreo.substring(0, indice);
-            
-            //Enviamos el objeto vivienda entero 
-            var objeto = {};
-            objeto = { 
-                "direccion"    : dir,
-                "capacidad"  : this.capacidad,
-                "caracteristicas" : this.caracteristicas,
-                "localidad" :  this.localidad ,
-                "provincia" : this.provincia, 
-                "foto" : this.foto,
-                "precio" : this.precio,
-                "latitud" : lat.toString(),
-                "longitud" : lng.toString(),
-                "vendedor" : nombreSinCorreo,
-                "comentarios" : []
-            };
-
-            //Axios enviando el objeto
-            console.log(objeto);
-            axios.post("https://examenwebbackend.deta.dev/appVivienda/viviendas", objeto).then((result) => {
-            this.id = result.data;
-            console.log(this.id);
-            });
-            alert('La vivienda ha sido creada correctamente');
-        },
-        
-        //Si se cambia el archivo, cv
-        handleFileChange: function(event) {
-            //Se abre el selector de archivos
-            console.log("handlefilechange", event.target.files);
-            this.file = event.target.files[0];
-            this.filesSelected = event.target.files.length;
-        },
-        prepareFormData: function() {
-            this.formData = new FormData();
-            this.formData.append("upload_preset", this.preset);
-            this.formData.append("file", this.fileContents);
-        },
-
-        //Subir archivo
-        upload: function (dir,lat,lng) {
-            //Recogemos archivo
-            let reader = new FileReader();
-            // Cuando llega un objeto se sube
-            reader.addEventListener(
-                "load",
-                function () {
-                    this.fileContents = reader.result;
-                    this.prepareFormData();
-                    let cloudinaryUploadURL = `https://api.cloudinary.com/v1_1/dgfl5ja8s/image/upload`;
-                    
-                    let requestObj = {
-                        url: cloudinaryUploadURL,
-                        method: "POST",
-                        data: this.formData,
-                    };
-                    axios(requestObj)
-                        .then(response => {
-                            this.results = response.data;
-                            this.foto= this.results.secure_url;
-                            this.sendForm(dir,lat,lng);
-                        })
-                }.bind(this),
-                false
-            );
-            // call for file read if there is a file
-            if (this.file && this.file.name) {
-                reader.readAsDataURL(this.file);
-            }
-
-        },
+    name: "get-request",
+    data(){
+        return{
+            aparcamientos: null,
+            latitud: this.resul_lat,
+            longitud: this.resul_lng,
+            token : jwt_decode(localStorage.getItem('Token'))
+        }
     },
+    created() {
+    // Si llega por parametros un filtro
+    axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + 36.7201600 + "/" + -4.4203400).then(response => this.aparcamientos = response.data);
+},
 
     //PARA EL MAPA
     setup() {
@@ -173,9 +104,11 @@ export default {
                 marker.setPosition(center)
                 sessionStorage.setItem('map', map.value);
                 sessionStorage.setItem('marker', marker.value);
+
                 resul_lat.value = center.lat();
                 resul_lng.value = center.lng();
-                
+                this.aparcamientos = null;
+                axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + resul_lat.value + "/" + resul_lng.value).then(response => this.aparcamientos = response.data)
             });
         })
         return {
@@ -184,68 +117,52 @@ export default {
             //coordenadas
             resul_lat, resul_lng, resul_dir
         }
-    },
-
-    data(){
-        return{
-            caracteristicas : "",
-            direccion : this.resul_dir,
-            precio : "",
-            capacidad : "",
-            localidad : "",
-            provincia : "",
-            foto: "",
-            latitud: this.resul_lat,
-            longitud: this.resul_lng,
-            id : null, 
-            file : null,
-            filesSelected : 0, 
-            fileContents: null, 
-            formData : null,
-            cloudname: "dgfl5ja8s", 
-            preset: "isefyon9", 
-            token : jwt_decode(localStorage.getItem('Token'))
-        }
     }
 }
 </script>
 
 <template>
 
-<h1>Registrar anuncio</h1>
-    <h5>(Los campos marcados con * son obligatorios)</h5>  
-        <form @submit.prevent="upload(resul_dir,resul_lat,resul_lng)">
-           
-            <label for="caracteristicas">Caracteristicas</label><br>
-            <input type="text" v-model="caracteristicas" size="50" width="50" /> <br>
+<h1>Busca una direccion</h1>
 
             <!-- Autocomplete location search input -->
-            <label for="direccion">Direccion*</label><br>
+            <label for="direccion">Direccion</label><br>
             <input class="w-full" id="place-input" type="text" required />
             <br>
 
-            <label for="direccion">Localidad*</label><br>
-            <input type="text" v-model="localidad" required /> <br>
+        <div class="m-6" ref="mapDiv" style="width: 40%; height: 400px; margin-left: 470px; margin-top: 5%;">
+        </div>
 
-            <label for="direccion">Provincia*</label><br>
-            <input type="text" v-model="provincia" required /> <br>
+        <h2 v-if="!this.aparcamientos">
+        No existen aparcamientos cerca
+      </h2>
 
-            <label for="precio">Precio/dia*</label><br>
-            <input type="number" v-model="precio" required /> <br>
+      <table v-else class="tabla-Todo">
+        <tr class="fila-encabezado">
 
-            <label for="capacidad">Capacidad*</label><br>
-            <input type="number" v-model="capacidad" required /> <br>
+   
+            <td class="celda-text" >Nombre</td>
+            <td class="celda-text" >Direccion</td>
+            <td class="celda-text" >Capacidad</td>
+            <td class="celda-text" >Libres</td>
+            <td class="celda-text" >Correo</td>
+        </tr>
 
-            <br>
-            <label for="file-input">Sube foto de la vivienda:</label> <br>
-            <input id="file-input" type="file" accept="image/png, image/jpeg" @change="handleFileChange($event)" />
-            <br>
+        <tr class="fila" v-for="aparcamiento in aparcamientos" :key="aparcamiento.poiID" >
 
-            <input type="submit" :disabled="filesSelected < 1 " value="Crear">
-        
-        </form>
+          <td class="celda-text" > {{aparcamiento.nombre}} </td>
 
-        <div class="m-6" ref="mapDiv" style="width: 40%; height: 400px; margin-left: 470px;"/>
+          <td class="celda-text" >{{aparcamiento.direccion}}</td>
+
+          <td class="celda-text" >{{aparcamiento.capacidad}}</td>
+
+          <td class="celda-text" >{{aparcamiento.libres}}</td>
+
+          <td class="celda-text" >{{aparcamiento.correo}}</td>
+
+        </tr>
+      </table>
+
 </template>
 
 <style>

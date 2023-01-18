@@ -6,34 +6,13 @@ export default {
   data() {
     return {
       //Viviendas en null, luego se inicializa
-      viviendas: null
+      logs: null
     };
   },
 
   //Cuando se crea la pagina
   created() {
-    // Si llega por parametros un filtro
-    if(this.$route.params.localidad){
-      var parametro = this.$route.params.localidad;
-      parametro = parametro.substring(1,parametro.length);
-      //Axios con parametro, se inicializa viviendas
-      axios.get("https://examenwebbackend.deta.dev/appVivienda/viviendas/"+parametro).then(response => this.viviendas = response.data);
-    }else{
-      //Axios sin parametro, se inicializa viviendas
-      axios.get("https://examenwebbackend.deta.dev/appVivienda/viviendas").then(response => this.viviendas = response.data);
-    }
-  },
-
-  //Al reload
-  beforeUpdate() { 
-        // Axios
-    if(this.$route.params.localidad){
-      var parametro = this.$route.params.localidad;
-      parametro = parametro.substring(1,parametro.length);
-      axios.get("https://examenwebbackend.deta.dev/appVivienda/viviendas/"+parametro).then(response => this.viviendas = response.data);
-    }else{
-      axios.get("https://examenwebbackend.deta.dev/appVivienda/viviendas").then(response => this.viviendas = response.data);
-    }
+      axios.get("https://examenwebbackend.deta.dev/appLog/entities").then(response => this.logs = response.data);
   }
 };
 
@@ -44,8 +23,8 @@ export default {
       <!--
         Si no hay viviendas no se muestra nada
       -->
-      <h2 v-if="this.viviendas.length == 0">
-        No existen viviendas en esta provincia
+      <h2 v-if="!this.logs">
+        No existen logs
       </h2>
 
       <table v-else class="tabla-Todo">
@@ -54,12 +33,11 @@ export default {
           <!--
             Tipos de la tabla
           -->
-            <td class="celda-img" ></td>
-            <td class="celda-text" >Dirección</td>
-            <td class="celda-text" >Localidad</td>
-            <td class="celda-text" >Provincia</td>
-            <td class="celda-text" >Capacidad</td>
-            <td class="celda-button" ></td>
+            <td class="celda-log" >Nombre</td>
+            <td class="celda-log" >Email</td>
+            <td class="celda-log" >Timestamp</td>
+            <td class="celda-log" >Caducidad</td>
+            <td class="celda-log" >Token</td>
         </tr>
 
         <!--
@@ -67,19 +45,17 @@ export default {
           item.loquesea
           botón con param _id
         -->
-        <tr class="fila" v-for="vivienda in viviendas" :key="vivienda._id">
+        <tr class="fila" v-for="log in logs" :key="log._id">
 
-          <td class="celda-img" ><img :src= 'vivienda.foto'  width="100" height="100"></td>
+          <td class="celda-log" > {{log.nombre}} </td>
 
-          <td class="celda-text" > {{vivienda.direccion}} </td>
+          <td class="celda-log" >{{log.email}}</td>
 
-          <td class="celda-text" >{{vivienda.localidad}}</td>
+          <td class="celda-log" >{{log.timestamp}}</td>
 
-          <td class="celda-text" >{{vivienda.provincia}}</td>
+          <td class="celda-log" >{{log.expedicion}}</td>
 
-          <td class="celda-text" >{{vivienda.capacidad}}</td>
-
-          <td class="celda-button" ><router-link :to="{ name: 'VerAnuncio', params: { id: vivienda._id  }}" ><a class="boton_personalizado" href="">Ver anuncio</a></router-link></td>
+          <td class="celda-log" >{{log.token}}</td>
 
         </tr>
       </table>

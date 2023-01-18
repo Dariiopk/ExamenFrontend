@@ -1,21 +1,29 @@
 <script>
 
+import axios from 'axios';
+import { GoogleMap, Marker } from 'vue3-google-map';
+
 export default{
+    components: {
+    GoogleMap,
+    Marker
+    },
     data: function(){
         return{
             //Datos necesarios
-            busqueda : "",
+            aparcamientos: null,
             token: localStorage.getItem('Token')
         };
     },
-    methods: {
-    //Pone el placeholder
-    getPlaceholder() {
-      return "Busca algo:";
+    created(){
+      axios.get("https://examenwebbackend.deta.dev/appEntity/entities/" + 36.7201600 + "/" + -4.4203400).then(response => this.aparcamientos = response.data);
     },
-    //Recoge el texto de busqueda 
-    getBusqueda(){
-        return " " + this.busqueda;
+    methods: {
+    mapCenter() {
+      return {
+        lat: 36.7201600,
+        lng: -4.4203400,
+      }
     }
     }
   
@@ -30,29 +38,51 @@ export default{
         <h1>Examen enero</h1>
     </div>
 
-    <div class="buscar">
-        <input v-model="busqueda" :placeholder="getPlaceholder()" />
-        <router-link :to="{ name: 'verListaLocalidad', params: { localidad: getBusqueda()  }}" ><a class="boton_personalizado" href="">Buscar</a></router-link>
+    <div v-if="token">
+
+    <div class="mapa">
+      <GoogleMap api-key="AIzaSyAVotfCRyxA9y3yBiOafDlwoessHlHleJk"
+        style="width: 400px; height: 400px; align: center; padding-left: 36%; padding-right: 25%; padding-top: 5%;"
+        :center="this.mapCenter()" :zoom="16">
+        <Marker :options="{ position: this.mapCenter() }" />
+      </GoogleMap>
     </div>
 
-    <!--
-        QUITABLE
-    -->
-    <table class="tabla-Inicio">    
-        <tr v-if="token">
-            <td class="text-button"><router-link to="/formulario" ><a class="boton_personalizado">Crear anuncio</a></router-link></td>
-            <td class="text-cell">¿Tiene viviendas vacias y le gustaria ganar un dinero? Entonces comienze registrando su casa en nuestra aplicación.
-                                    ¡Introduciendo pocos datos podra convertir su casa en una residencia vacacional y ganarse un dinero extra!
-            </td>
+    <h2 v-if="!this.aparcamientos">
+        No existen aparcamientos cerca
+      </h2>
+
+      <table v-else class="tabla-Todo">
+        <tr class="fila-encabezado">
+
+   
+            <td class="celda-text" >Nombre</td>
+            <td class="celda-text" >Direccion</td>
+            <td class="celda-text" >Capacidad</td>
+            <td class="celda-text" >Libres</td>
+            <td class="celda-text" >Correo</td>
         </tr>
 
-        <tr>
-            <td class="text-cell">¿Esta buscando donde pasar las vacaciones? Entonces mire todas las ofertas de residencias vacacionales que ofrecen nuestros usuarios.
-                                    Cuando le guste una podra reservarlá en las fechas que usted prefieras, realizando un pago seguro a traves de PayPal. ¿A qué espera?
-            </td>
-            <td class="text-button"><router-link to="/verLista" ><a class="boton_personalizado" href="">Ver anuncios</a></router-link></td>
+        <tr class="fila" v-for="aparcamiento in aparcamientos" :key="aparcamiento.poiID" >
+
+          <td class="celda-text" > {{aparcamiento.nombre}} </td>
+
+          <td class="celda-text" >{{aparcamiento.direccion}}</td>
+
+          <td class="celda-text" >{{aparcamiento.capacidad}}</td>
+
+          <td class="celda-text" >{{aparcamiento.libres}}</td>
+
+          <td class="celda-text" >{{aparcamiento.correo}}</td>
+
         </tr>
-    </table>
+      </table>
+    </div>
+
+    <div v-else>
+      <h2>Inicia sesion primero</h2>
+    </div>
+
 
 </template>
 
