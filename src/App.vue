@@ -63,7 +63,7 @@ export default{
     },
     //Mostramos un alert con la información
     mostrarUsuario(){
-        alert("Timestamp: " + this.getTime() + " -- Email: " + this.getEmail() + "    Caducidad: " + this.getExp() + " -- ID: " + this.getId());
+        alert("Timestamp: " + this.getTime() + "\nEmail: " + this.getEmail() + "\nCaducidad: " + this.getExp() + "\nID: " + this.getId() + "\nImagen: " + localStorage.getItem("Img"));
     },
     //Borramos los datos guardados
     cerrarSesion(){

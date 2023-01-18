@@ -63,6 +63,7 @@
         localStorage.setItem('Time', responsePayload.iat);
         localStorage.setItem('Exp', responsePayload.exp);
         localStorage.setItem('Id', responsePayload.sub);
+        localStorage.setItem('Img', responsePayload.picture);
         
         //Recargamos la pagina por si hay algo que no sea visible
         location.reload();
